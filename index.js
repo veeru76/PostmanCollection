@@ -1,18 +1,7 @@
-const express = require('express');
-const request = require('request');
-const app = express();
-
-// Your route definitions go here...
-app.get('/', (req, res) => {
-  res.send('Hello, World!');
-});
-
-app.post('/users', (req, res) => {
-  res.send("new user")
-});
+const axios = require('axios');
 
 // Function to generate Postman collection
-function generatePostmanCollection(appUrl, postmanApiKey) {
+async function generatePostmanCollection(appUrl, postmanApiKey) {
   const routes = [];
 
   // Collect route details
@@ -34,7 +23,7 @@ function generatePostmanCollection(appUrl, postmanApiKey) {
       'X-Api-Key': postmanApiKey,
       'Content-Type': 'application/json',
     },
-    body: {
+    data: {
       name: 'Routes Collection',
       description: 'A collection created from Express routes',
       requests: routes.map((route) => ({
@@ -45,20 +34,14 @@ function generatePostmanCollection(appUrl, postmanApiKey) {
         },
       })),
     },
-    json: true,
   };
 
-  return new Promise((resolve, reject) => {
-    request(options, (error, response, body) => {
-      if (error) {
-        reject(error);
-      } else if (response.statusCode !== 200) {
-        reject(new Error(`Postman API error: ${body.error}`));
-      } else {
-        resolve(body);
-      }
-    });
-  });
+  try {
+    const response = await axios(options);
+    return response.data;
+  } catch (error) {
+    throw new Error(`Postman API error: ${error.response.data.error}`);
+  }
 }
 
 module.exports = generatePostmanCollection;

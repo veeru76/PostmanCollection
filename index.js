@@ -11,10 +11,11 @@ app.post('/users', (req, res) => {
   res.send("new user")
 });
 
-// Function to collect route details
-function collectRoutes() {
+// Function to generate Postman collection
+function generatePostmanCollection(appUrl, postmanApiKey) {
   const routes = [];
 
+  // Collect route details
   app._router.stack.forEach((middleware) => {
     if (middleware.route) {
       const route = {
@@ -25,11 +26,7 @@ function collectRoutes() {
     }
   });
 
-  return routes;
-}
-
-// Function to create a Postman collection from the collected routes
-function createPostmanCollection(routesJson, appUrl, postmanApiKey) {
+  // Create Postman collection
   const options = {
     method: 'POST',
     url: 'https://api.getpostman.com/collections',
@@ -40,7 +37,7 @@ function createPostmanCollection(routesJson, appUrl, postmanApiKey) {
     body: {
       name: 'Routes Collection',
       description: 'A collection created from Express routes',
-      requests: routesJson.map((route) => ({
+      requests: routes.map((route) => ({
         name: `${route.method.join(', ')} ${route.path}`,
         request: {
           url: `${appUrl}${route.path}`,
@@ -64,7 +61,4 @@ function createPostmanCollection(routesJson, appUrl, postmanApiKey) {
   });
 }
 
-module.exports = {
-  collectRoutes,
-  createPostmanCollection,
-};
+module.exports = generatePostmanCollection;
